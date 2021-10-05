@@ -1,0 +1,96 @@
+cat0510_median-2:
+#Creating model 
+cat_model=CatBoostClassifier(random_seed=42, cat_features=['Education_Level', 'Marital_Status'], n_estimators=500000,eval_metric='AUC',max_depth=4,learning_rate=0.1,#reg_lambda=5,#5
+                              subsample=0.9,bootstrap_type='Bernoulli',#leaf_estimation_iterations=10,
+                    #l2_leaf_reg=5,#bagging_temperature=0.85,random_strength=100,
+                     use_best_model=True)
+
+#Training Catboost Model on train set
+cat_model.fit(X_train,y_train, eval_set=[(X_train,y_train),(X_test, y_test)], early_stopping_rounds=100,verbose=100)
+
+#Predictiing on Test Set
+y_pred_cat=cat_model.predict(X_test)
+
+#Evaluating model using f1_score
+print("Catboost F1 score on validation set is : ",f1_score(y_test,y_pred_cat))
+
+
+cat0510_median-3:
+#Creating model 
+cat_model=CatBoostClassifier(random_seed=42, cat_features=['Education_Level', 'Marital_Status'], n_estimators=500000,eval_metric='AUC',max_depth=4,learning_rate=0.1,#reg_lambda=5,#5
+                              subsample=0.9,bootstrap_type='Bernoulli', leaf_estimation_iterations=10,
+                    l2_leaf_reg=5, #bagging_temperature=0.85,random_strength=100,
+                     use_best_model=True)
+
+#Training Catboost Model on train set
+cat_model.fit(X_train,y_train, eval_set=[(X_train,y_train),(X_test, y_test)], early_stopping_rounds=100,verbose=100)
+
+#Predictiing on Test Set
+y_pred_cat=cat_model.predict(X_test)
+
+#Evaluating model using f1_score
+print("Catboost F1 score on validation set is : ",f1_score(y_test,y_pred_cat))
+
+
+xgb0510_median-1:
+errcb4=[]
+y_pred_totcb4=[]
+from sklearn.model_selection import KFold,StratifiedKFold, TimeSeriesSplit
+fold=KFold(n_splits=15)
+i=1
+for train2_index, test2_index in fold.split(X,y):
+    X_train, X_test = X.iloc[train2_index], X.iloc[test2_index]
+    y_train, y_test = y[train2_index], y[test2_index]
+    m4=XGBClassifier(max_depth=6, learning_rate=0.1, n_estimators=800, silent=True, metrics='auc',colsample_bylevel=0.8, reg_alpha=0.8)
+    m4.fit(X_train,y_train,eval_set=[(X_train,y_train),(X_test, y_test)], early_stopping_rounds=100,verbose=100)
+    preds=m4.predict_proba(X_test)[:, 1]
+    print("err: ",roc_auc_score(y_test,preds))
+    errcb4.append(roc_auc_score(y_test,preds))
+#     p4 = m4.predict_proba(test)[:, 1]
+#     y_pred_totcb4.append(p4)
+    
+# #Training Catboost Model on train set
+# cat_model.fit(X_train,y_train, eval_set=[(X_train,y_train),(X_test, y_test)], early_stopping_rounds=100,verbose=100)
+
+# #Predictiing on Test Set
+y_pred_xgb=m4.predict(X_test)
+
+# #Evaluating model using f1_score
+print("XGBoost F1 score on validation set is : ",f1_score(y_test,y_pred_xgb))
+
+
+logreg0510_median-1:
+X = train[Selected_features]
+y = train.Response
+
+#Split into train and test set
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+# check classification scores of logistic regression
+logreg = LogisticRegression()
+logreg.fit(X_train, y_train)
+y_pred = logreg.predict(X_test)
+y_pred_proba = logreg.predict_proba(X_test)[:, 1]
+[fpr, tpr, thr] = roc_curve(y_test, y_pred_proba)
+where Selected_features = ['Education_Level', 'Marital_Status', 'No_of_Kids_in_home', 
+                    'No_of_Teen_in_home', 'Recency', 'Discounted_Purchases', 
+                    'WebPurchases', 'CatalogPurchases', 'StorePurchases', 
+                    'Total_Amount_Spent', 'WebVisitsMonth']
+
+
+logregGS0510_median-1:
+X = train[Selected_features]
+
+param_grid = {'C': np.arange(1e-05, 3, 0.1)}
+scoring = {'Accuracy': 'accuracy', 'AUC': 'roc_auc', 'Log_loss': 'neg_log_loss'}
+
+gs = GridSearchCV(LogisticRegression(), return_train_score=True,
+                  param_grid=param_grid, scoring=scoring, cv=10, refit='Accuracy')
+
+gs.fit(X, y)
+results = gs.cv_results_
+
+
+
+
