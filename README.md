@@ -1,1 +1,3 @@
-"# Notes on different notebooks \n Create starter notebook" 
+# Notes on different notebooks 
+
+Create starter notebook
